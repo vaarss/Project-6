@@ -10,23 +10,31 @@ class PCA:
     def fit(self, datapoints, dimension_in, dimension_out): 
         _sum = 0
         centered_data = []
-        # for i in datapoints:
-        #     for j in i: 
-        #         _sum += j
         my = numpy.mean(datapoints, axis=0)
+        snitt = []
+        for x in my:
+            snitt.append(x)
+        print("snitt: ", snitt)
+        print("datapoints", datapoints)
         for i in datapoints: 
-            centered_datapoint = i - my
+            y = 0
+            centered_datapoint = []
+            while y < len(i):
+                centered_datapoint.append(i[y] - snitt[y])
+                y += 1
             centered_data.append(centered_datapoint)
+        print("centered data: ", centered_data)
         matrix = numpy.cov(centered_data)
+        print("cov matrix: ", matrix)
         if dimension_in - 1 > dimension_out:
-            eigenvalues, eigenvectors = scipy.sparse.linalg.eigs(matrix)
+            [eigenvalues, eigenvectors] = scipy.sparse.linalg.eigs(matrix)
         elif dimension_in -1 == dimension_out: 
-            eigenvalues, eigenvectors = numpy.linalg.eigh(matrix)
+            [eigenvalues, eigenvectors] = numpy.linalg.eigh(matrix)
         print("Eigenvectors", eigenvectors)
         sorted_eigenvalues_index = numpy.argsort(eigenvalues)[-dimension_out:][::-1]
         transformation_matrix = []
         for n in sorted_eigenvalues_index:
-            print(eigenvectors[n])
+            print("eigenvectors[n] (skal printes 2 ganger): ", eigenvectors[n])
             transformation_matrix.append(eigenvectors[n])
         print("transformation matrix: ", transformation_matrix)
         return transformation_matrix
@@ -49,6 +57,7 @@ class PCA:
         new_list = []
         for i in datapoints:
             new_list.append(self.transform(i, datapoints))
+        print("new list: ", new_list)
         return new_list
 
 
@@ -56,4 +65,4 @@ class PCA:
 if __name__ == '__main__':
     pca = PCA()
     datapoints = pca.csv_reader("swiss_data.csv")
-    print(pca.transform_matrix(datapoints))
+    pca.transform_matrix(datapoints)
