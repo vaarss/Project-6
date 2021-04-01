@@ -1,6 +1,7 @@
 import csv
 import matplotlib
 import numpy 
+import numpyp
 import scipy
 
 class PCA:
@@ -24,7 +25,7 @@ class PCA:
                 y += 1
             centered_data.append(centered_datapoint)
         print("centered data: ", centered_data)
-        matrix = numpy.cov(centered_data)
+        matrix = numpyp.cov(centered_data)
         print("cov matrix: ", matrix)
         if dimension_in - 1 > dimension_out:
             [eigenvalues, eigenvectors] = scipy.sparse.linalg.eigs(matrix)
@@ -59,8 +60,6 @@ class PCA:
             new_list.append(self.transform(i, datapoints))
         print("new list: ", new_list)
         return new_list
-
-
 
 if __name__ == '__main__':
     pca = PCA()
