@@ -1,7 +1,6 @@
 import csv
 import matplotlib
 import numpy 
-import numpyp
 import scipy
 
 class PCA:
@@ -12,20 +11,12 @@ class PCA:
         _sum = 0
         centered_data = []
         my = numpy.mean(datapoints, axis=0)
-        snitt = []
-        for x in my:
-            snitt.append(x)
-        print("snitt: ", snitt)
+        print("my: ", my)
         print("datapoints", datapoints)
         for i in datapoints: 
-            y = 0
-            centered_datapoint = []
-            while y < len(i):
-                centered_datapoint.append(i[y] - snitt[y])
-                y += 1
-            centered_data.append(centered_datapoint)
+            centered_data.append(i - my)
         print("centered data: ", centered_data)
-        matrix = numpyp.cov(centered_data)
+        matrix = numpy.cov(centered_data)
         print("cov matrix: ", matrix)
         if dimension_in - 1 > dimension_out:
             [eigenvalues, eigenvectors] = scipy.sparse.linalg.eigs(matrix)
@@ -42,6 +33,7 @@ class PCA:
 
     def transform(self, x, datapoints):
         x = x - numpy.mean(datapoints, axis=0)
+        print("x in transform: ", x)
         dimension_in = len(x)
         transformation_matrix = self.fit(datapoints, dimension_in, 2)
         print("x: ", x)
