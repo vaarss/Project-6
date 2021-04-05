@@ -1,59 +1,46 @@
 import csv
-import matplotlib
-import numpy 
-import scipy
+import matplotlib.pyplot as plt
+import numpy
+import scipy.sparse.linalg
 
 class PCA:
     def __init__(self):
         pass
 
-    def fit(self, datapoints, dimension_in, dimension_out): 
-        _sum = 0
-        centered_data = []
-        # for i in datapoints:
-        #     for j in i: 
-        #         _sum += j
-        my = numpy.mean(datapoints, axis=0)
-        for i in datapoints: 
-            centered_datapoint = i - my
-            centered_data.append(centered_datapoint)
-        matrix = numpy.cov(centered_data)
+    def fit(self, datapoints, dimension_in, dimension_out):
+        datapoints = datapoints -  datapoints.mean(axis=0)
+        matrix = numpy.cov(numpy.transpose(datapoints))
         if dimension_in - 1 > dimension_out:
             eigenvalues, eigenvectors = scipy.sparse.linalg.eigs(matrix)
         elif dimension_in -1 == dimension_out: 
             eigenvalues, eigenvectors = numpy.linalg.eigh(matrix)
-        print("Eigenvectors", eigenvectors)
-        sorted_eigenvalues_index = numpy.argsort(eigenvalues)[-dimension_out:][::-1]
-        transformation_matrix = []
-        for n in sorted_eigenvalues_index:
-            print(eigenvectors[n])
-            transformation_matrix.append(eigenvectors[n])
-        print("transformation matrix: ", transformation_matrix)
-        return transformation_matrix
+        idx = eigenvalues.argsort()[::-1]
+        eigenvectors=eigenvectors[:, idx[-dimension_out:]]
+        eigenvectors = numpy.array(eigenvectors)
+        return eigenvectors
 
     def transform(self, x, datapoints):
         x = x - numpy.mean(datapoints, axis=0)
         dimension_in = len(x)
         transformation_matrix = self.fit(datapoints, dimension_in, 2)
-        print("x: ", x)
-        print("transposed: ", numpy.transpose(transformation_matrix))
-        return numpy.matmul(numpy.transpose(transformation_matrix), x)
+        return_value = numpy.matmul(numpy.transpose(transformation_matrix), x)
+        return return_value[numpy.newaxis]
 
-    def csv_reader(self, file):
-        with open(file) as csv_file:
-            csv_reader = list(csv.reader(csv_file, delimiter=','))
-        desired_array = [[float(numeric_string) for numeric_string in x] for x in csv_reader]
-        return desired_array
 
     def transform_matrix(self, datapoints):
-        new_list = []
+        arr = numpy.zeros((0,2))
         for i in datapoints:
-            new_list.append(self.transform(i, datapoints))
-        return new_list
-
-
+            arr = numpy.append(arr, self.transform(i, datapoints), axis=0)
+        return arr
 
 if __name__ == '__main__':
     pca = PCA()
-    datapoints = pca.csv_reader("swiss_data.csv")
-    print(pca.transform_matrix(datapoints))
+    datapoints = numpy.genfromtxt(("digits.csv"), delimiter = ',')
+    transformed = pca.transform_matrix(datapoints)
+    x = []
+    y = []
+    for data_point in transformed:
+        x.append(data_point[0])
+        y.append(data_point[1])
+    plt.scatter(x,y)
+    plt.show()
