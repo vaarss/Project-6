@@ -7,11 +7,12 @@ class PCA:
     def __init__(self):
         pass
 
+
     def fit(self, datapoints, dimension_in, dimension_out):
         datapoints = datapoints -  datapoints.mean(axis=0)
         matrix = numpy.cov(numpy.transpose(datapoints))
         if dimension_in - 1 > dimension_out:
-            eigenvalues, eigenvectors = scipy.sparse.linalg.eigs(matrix)
+            [eigenvalues, eigenvectors] = scipy.sparse.linalg.eigs(matrix)
         elif dimension_in -1 == dimension_out: 
             eigenvalues, eigenvectors = numpy.linalg.eigh(matrix)
         idx = eigenvalues.argsort()[::-1]
@@ -19,8 +20,10 @@ class PCA:
         eigenvectors = numpy.array(eigenvectors)
         return eigenvectors
 
+
     def transform(self, x, datapoints):
         x = x - numpy.mean(datapoints, axis=0)
+        print("x in transform: ", x)
         dimension_in = len(x)
         transformation_matrix = self.fit(datapoints, dimension_in, 2)
         return_value = numpy.matmul(numpy.transpose(transformation_matrix), x)
@@ -44,3 +47,4 @@ if __name__ == '__main__':
         y.append(data_point[1])
     plt.scatter(x,y)
     plt.show()
+
