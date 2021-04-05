@@ -5,6 +5,7 @@ class Isomap:
         self.data_points = data_points
         self.k = k
         self.euclidian_distances()
+        
     def euclidian_distances(self):
         N, D = self.data_points.shape
         euclidian_matrix = np.zeros((N, N))
