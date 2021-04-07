@@ -46,26 +46,30 @@ class tSNE:
 
     def t_sne(self, X):
         """ method to compute tsne algorithm with optimizations """
-        p = self.k_nearest_neighbors(X) #need to symmetrize knn to get p
+        knn = self.k_nearest_neighbors(X)
+        p = numpy.maximum(knn, knn.transpose()) #symmetrize knn to get p
         n_data = p.shape[0]
         P = p / numpy.sum(p)
-        y = numpy.random.normal(0, 10 ** (-4), (n_data, 2))
+        y = numpy.random.normal(0, 1e-4, (n_data, 2))
         # Skal bruke y og p(similarity matrix) til å regne ut P og Q
         gain = numpy.ones((n_data, 2))
         delta = numpy.zeros((n_data, 2))
         e = 500
-        # Loop for iterations: 
+        # Loop for iterations:
         for n in range(self.iterations):
             # Lower momentum the first iterations
-            if n < 250: 
+            if n < 250:
                 a = 0.5
             else: 
                 a = self.a
             q = 1 / (1 + (numpy.abs(self.euclidean_distances(y)))**2)
             q[range(n_data), range(n_data)] = 0  # Set the diagonal to 0
             Q = q / numpy.sum(q)
-            # Add "lying" factor to the first 100 iterations
-            G = (P - Q) * q if n > 100 else (4 * P - Q) * q
+            # Add "lying" factor to the first 100 iterations 
+            if n <= 100:
+                G = (4 * P - Q) * q
+            else: 
+                G = (P - Q) * q 
             S = numpy.diag(numpy.sum(G, axis=1))
             grad = 4 * (S - G) @ y
 
@@ -78,7 +82,7 @@ class tSNE:
 
 if __name__ == '__main__':
     datapoints = numpy.genfromtxt(("digits.csv"), delimiter = ',')
-    tsne = tSNE(datapoints, 50, 10, 0.8)
+    tsne = tSNE(datapoints, 100, 10, 0.8)
     y = tsne.t_sne(datapoints)
     color = numpy.genfromtxt('digits_label.csv', delimiter='\n')
     plt.scatter(y[:, 0], y[:, 1], s=10, c=color, cmap='jet', marker=".")
